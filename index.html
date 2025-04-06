@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resort Booking</title>
+  <link rel="stylesheet" href="resort.css" />
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="index.html" class="logo">
+      <img src="images/logo.png" alt="ResortBooking Logo" />
+    </a>
+
+    <nav class="nav-links" id="nav-links">
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+
+        <li><a href="contact.html">Contact Us</a></li>
+      </ul>
+    </nav>
+
+    <!-- Notification Icon -->
+    <div class="notification-wrapper">
+      <img src="images/notification-bell.png" alt="Notifications" class="notification-icon" onclick="toggleNotifications()" />
+      <div class="notification-dropdown" id="notificationDropdown">
+        <h4>Latest Offers</h4>
+        <ul>
+          <li>🎉 20% off on Maldives resorts this weekend!</li>
+          <li>🌴 Free spa voucher with every Bali booking</li>
+          <li>🔥 Goa Deal: Book 3 nights, pay for 2!</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero">
+    <div class="hero-content" data-aos="fade-up">
+      <h1>Discover Your Perfect Getaway</h1>
+      <p>Luxury resorts, beachfront views, and unforgettable experiences.</p>
+      <a href="#booking" class="btn-primary" data-aos="zoom-in" data-aos-delay="300">Book Now</a>
+    </div>
+  </section>
+
+  <!-- Booking Section -->
+  <section id="booking" data-aos="fade-up">
+    <h2 data-aos="fade-right">Book Your Resort</h2>
+    <form class="booking-form" data-aos="fade-up" data-aos-delay="200">
+      <label for="location">Choose Destination:</label>
+      <select id="location" name="location" required>
+        <option value="">Select a location</option>
+        <option value="bali">Bali</option>
+        <option value="maldives">Maldives</option>
+        <option value="goa">Goa</option>
+        <option value="phuket">Phuket</option>
+      </select>
+
+      <label for="resort">Choose Resort:</label>
+      <select id="resort" name="resort" required>
+        <option value="">Select a resort</option>
+        <option value="paradise-beach-villa">Paradise Beach Villa</option>
+        <option value="ocean-bliss-hut">Ocean Bliss Hut</option>
+        <option value="sunset-bay">Sunset Bay Resort</option>
+      </select>
+
+      <label for="checkin">Check-in Date:</label>
+      <input type="date" id="checkin" name="checkin" required>
+
+      <label for="checkout">Check-out Date:</label>
+      <input type="date" id="checkout" name="checkout" required>
+
+      <label for="guests">Number of Guests:</label>
+      <input type="number" id="guests" name="guests" min="1" max="10" required>
+
+      <label for="rooms">Number of Rooms</label>
+      <select id="rooms" name="rooms" required>
+        <option value="" disabled selected>Select rooms</option>
+        <option value="1">1 Room</option>
+        <option value="2">2 Rooms</option>
+        <option value="3">3 Rooms</option>
+        <option value="4">4 Rooms</option>
+        <option value="5+">5+ Rooms</option>
+      </select>
+
+      <label for="email">Your Email:</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="requests">Special Requests (Optional):</label>
+      <textarea id="requests" name="requests" rows="3" placeholder="Add any special request..."></textarea>
+
+      <button type="submit">Confirm Booking</button>
+    </form>
+  </section>
+
+  <!-- Confirmation Popup -->
+  <div id="confirmation-popup" class="popup-overlay">
+    <div class="popup-content">
+      <h2>🎉 Booking Confirmed!</h2>
+      <p>Thank you for booking with us.</p>
+      <p>Our support team will contact you within 5 minutes.</p>
+      <button onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 1000, once: true });
+
+    function toggleNotifications() {
+      const dropdown = document.getElementById("notificationDropdown");
+      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    }
+
+    function closePopup() {
+      document.getElementById("confirmation-popup").style.display = "none";
+    }
+
+    window.addEventListener("click", function(e) {
+      const dropdown = document.getElementById("notificationDropdown");
+      if (!e.target.closest(".notification-wrapper")) {
+        dropdown.style.display = "none";
+      }
+    });
+  </script>
+
+  <!-- Booking Handler -->
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const supabase = createClient(
+      'https://cfbnauisnfsvucmhesnj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmYm5hdWlzbmZzdnVjbWhlc25qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDMyNzYsImV4cCI6MjA1OTA3OTI3Nn0.3mIbG7JmfrQyw-eAdmCxiBKdTuhpBYxx7yl7Gy8xzCk'
+    );
+
+    emailjs.init("D7Br6wrrWXTRBxguy");
+
+    const form = document.querySelector(".booking-form");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const bookingData = Object.fromEntries(formData.entries());
+
+      const { error } = await supabase.from("bookings").insert([bookingData]);
+      if (error) {
+        alert("❌ Failed to save booking.");
+        return;
+      }
+
+      emailjs.send("service_x87fn9r", "template_hyi0a0p", {
+        user_email: bookingData.email,
+        location: bookingData.location,
+        resort: bookingData.resort,
+        checkin: bookingData.checkin,
+        checkout: bookingData.checkout,
+        guests: bookingData.guests,
+        rooms: bookingData.rooms,
+        requests: bookingData.requests || "No special request provided."
+      })
+      .then(() => {
+        form.reset();
+        document.getElementById("confirmation-popup").style.display = "flex";
+      })
+      .catch(() => {
+        alert("Booking saved, but email failed.");
+      });
+    });
+  </script>
+</body>
+</html>
