@@ -145,34 +145,44 @@
     const form = document.querySelector(".booking-form");
 
     form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const bookingData = Object.fromEntries(formData.entries());
+  e.preventDefault();
+  const formData = new FormData(form);
+  const bookingData = Object.fromEntries(formData.entries());
 
-      const { error } = await supabase.from("bookings").insert([bookingData]);
-      if (error) {
-        alert("❌ Failed to save booking.");
-        return;
-      }
+  // Show loading spinner
+  document.getElementById("loading-overlay").style.display = "flex";
 
-      emailjs.send("service_x87fn9r", "template_hyi0a0p", {
-        user_email: bookingData.email,
-        location: bookingData.location,
-        resort: bookingData.resort,
-        checkin: bookingData.checkin,
-        checkout: bookingData.checkout,
-        guests: bookingData.guests,
-        rooms: bookingData.rooms,
-        requests: bookingData.requests || "No special request provided."
-      })
-      .then(() => {
-        form.reset();
-        document.getElementById("confirmation-popup").style.display = "flex";
-      })
-      .catch(() => {
-        alert("Booking saved, but email failed.");
-      });
+  // Simulate 3-second loading
+  setTimeout(async () => {
+    const { error } = await supabase.from("bookings").insert([bookingData]);
+    if (error) {
+      document.getElementById("loading-overlay").style.display = "none";
+      alert("❌ Failed to save booking.");
+      return;
+    }
+
+    emailjs.send("service_x87fn9r", "template_hyi0a0p", {
+      user_email: bookingData.email,
+      location: bookingData.location,
+      resort: bookingData.resort,
+      checkin: bookingData.checkin,
+      checkout: bookingData.checkout,
+      guests: bookingData.guests,
+      rooms: bookingData.rooms,
+      requests: bookingData.requests || "No special request provided."
+    })
+    .then(() => {
+      form.reset();
+      document.getElementById("loading-overlay").style.display = "none";
+      document.getElementById("confirmation-popup").style.display = "flex";
+    })
+    .catch(() => {
+      document.getElementById("loading-overlay").style.display = "none";
+      alert("Booking saved, but email failed.");
     });
+  }, 3000); // 3 seconds
+});
+
   </script>
 </body>
 </html>
